@@ -61,6 +61,7 @@ namespace bio {
 			}
 			
 		}
+		return c;
 	}
 
 	size_t BinaryBuffer::defaults::buffer_size = 5000;

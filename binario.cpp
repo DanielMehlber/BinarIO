@@ -17,10 +17,12 @@ void bio::BinaryBuffer::open(MODE mode, const char* location)
 {
 	current_index = 0;
 
-	if(mode == bio::MODE::READ)
+	if(mode == bio::MODE::READ){
 		file = new std::fstream(location, std::ios::in | std::ios::binary);
-	else
+		read_next();
+	} else {
 		file = new std::fstream(location, std::ios::out | std::ios::binary | std::ios::trunc);
+	}
 	
 	current_mode = mode;
 
@@ -76,6 +78,8 @@ void bio::BinaryBuffer::finish(){
 	if(file->is_open() && current_index > 0 && current_mode == bio::MODE::WRITE){
 		write_next();
 	}
+
+	file->flush();
 }
 
 void bio::BinaryBuffer::close(){

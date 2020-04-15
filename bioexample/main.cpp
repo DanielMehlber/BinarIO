@@ -24,24 +24,54 @@ public:
 int main() {
 	out << "Example started" << end;
 
-	bio::BinaryBuffer buff;
+	int i = 5;
 
-	/* try {
-		buff.open(bio::MODE::WRITE, "test.test");
+	bio::BinaryBuffer buffer;
+	try
+	{
+		buffer.open(bio::MODE::WRITE, "test.test");
+	}
+	catch(myexcept::myexcept& e)
+	{
+		e(__FUNCTION__, "Cannot open file to write");
+		std::cerr << e << std::endl;
+	}
+	
+	
+
+	try
+	{
+		bio::serialize<int>(buffer, i);
+	}
+	catch(myexcept::myexcept& e)
+	{
+		e(__FUNCTION__, "Cannot serialize data");
+		std::cerr << e << std::endl;
+	}
+	
+	buffer.close();
+
+	try{
+		buffer.open(bio::MODE::READ, "test.test");
 	}catch(myexcept::myexcept& e){
-		e(__func__, "Cannot open file");
-		std::cout << e.get() << std::endl;
-	} */
-
-	for(int i = 0; i < 5000; i++){
-		try{
-			bio::serialize<int>(buff, i);
-		}catch(myexcept::myexcept& e){
-			e(__FUNCTION__, "Cannot serialize");
-			std::cout << e.get() << std::endl;
-			return -1;
-		}
+		e(__FUNCTION__, "Cannot open file to read");
+		std::cerr << e << std::endl;	
 	}
 
-	return 0;
+	try
+	{
+		i = bio::deserialize<int>(buffer);
+	}
+	catch(myexcept::myexcept& e)
+	{
+		e(__FUNCTION__, "Cannot deserialize data");
+		std::cerr << e << '\n';
+	}
+
+	out << i << end;
+	
+
+	buffer.close();
+
+	out << "Example finished" << end;
 }
