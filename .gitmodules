@@ -1,0 +1,3 @@
+[submodule "myexcept"]
+	path = myexcept
+	url = https://github.com/danielmehlber/myexcept
