@@ -10,11 +10,16 @@ public:
 	int a = 5;
 	float b = 0.5f;
 	char* text = "Hallo";
-	double arr[5] = {1, 2, 3, 4, 5};
 	void serialize(bio::BinaryBuffer& buffer) {
+		bio::serialize(buffer, a);
+		bio::serialize(buffer, b);
+		bio::serializeArray<char>(buffer, text, std::strlen(text) + 1);
 	}
 
 	void deserialize(bio::BinaryBuffer& buffer) {
+		a = bio::deserialize<int>(buffer);
+		b = bio::deserialize<float>(buffer);
+		text = bio::deserializeArray<char>(buffer);
 	}
 
 	A() {};
@@ -24,54 +29,18 @@ public:
 int main() {
 	out << "Example started" << end;
 
-	int i = 5;
+	bio::BinaryBuffer buffer(5000);
 
-	bio::BinaryBuffer buffer;
-	try
-	{
-		buffer.open(bio::MODE::WRITE, "test.test");
-	}
-	catch(myexcept::myexcept& e)
-	{
-		e(__FUNCTION__, "Cannot open file to write");
-		std::cerr << e << std::endl;
-	}
-	
-	
-
-	try
-	{
-		bio::serialize<int>(buffer, i);
-	}
-	catch(myexcept::myexcept& e)
-	{
-		e(__FUNCTION__, "Cannot serialize data");
-		std::cerr << e << std::endl;
-	}
-	
+	A a;
+	buffer.open(bio::MODE::WRITE, "test.test");
+	a.serialize(buffer);
 	buffer.close();
 
-	try{
-		buffer.open(bio::MODE::READ, "test.test");
-	}catch(myexcept::myexcept& e){
-		e(__FUNCTION__, "Cannot open file to read");
-		std::cerr << e << std::endl;	
-	}
-
-	try
-	{
-		i = bio::deserialize<int>(buffer);
-	}
-	catch(myexcept::myexcept& e)
-	{
-		e(__FUNCTION__, "Cannot deserialize data");
-		std::cerr << e << '\n';
-	}
-
-	out << i << end;
-	
-
+	buffer.open(bio::MODE::READ, "test.test");
+	a.deserialize(buffer);
 	buffer.close();
+
+	out << a.a << ", " << a.b << ", " << a.text << end;
 
 	out << "Example finished" << end;
 }

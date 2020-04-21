@@ -1,12 +1,20 @@
 #include "binario.h"
 
-bio::BinaryBuffer::BinaryBuffer() : max_buffer_size{bio::BinaryBuffer::defaults::buffer_size}{
-	buffer = new char[max_buffer_size];
+bio::BinaryBuffer::BinaryBuffer() : buffer_size{bio::BinaryBuffer::defaults::buffer_size}
+{
+	buffer = new char[buffer_size];
 };
 
-bio::BinaryBuffer::BinaryBuffer(size_t size) : max_buffer_size{size}{
-	buffer = new char[max_buffer_size];
+bio::BinaryBuffer::BinaryBuffer(size_t size) : buffer_size{size}
+{
+	buffer = new char[buffer_size];
 };
+
+bio::BinaryBuffer::BinaryBuffer(const bio::BinaryBuffer& cpy) : bio::BinaryBuffer(cpy.buffer_size)
+{
+	std::memcpy(buffer, cpy.buffer, buffer_size);
+	current_index = cpy.current_index;
+}
 
 bio::BinaryBuffer::~BinaryBuffer()
 {
@@ -27,7 +35,7 @@ void bio::BinaryBuffer::open(MODE mode, const char* location)
 	current_mode = mode;
 
 	if(!file)
-		throw myexcept::myexcept(__FUNCTION__, "Cannot open file. Maybe it doesn't exist");
+		throw myexcept::exception(__FUNCTION__, "Cannot open file. Maybe it doesn't exist");
 	file->seekp(std::ios::end);
 	size = file->tellp();
 	file->seekp(std::ios::beg);
@@ -37,19 +45,19 @@ void bio::BinaryBuffer::open(MODE mode, const char* location)
 void bio::BinaryBuffer::read_next()
 {
 	if (!file)
-		throw myexcept::myexcept(__func__, "No file open to read from");
+		throw myexcept::exception(__func__, "No file open to read from");
 
 	if(!file->is_open())
-		throw myexcept::myexcept(__func__, "No file open to write to");
+		throw myexcept::exception(__func__, "No file open to write to");
 	
 	size_t delta = size - file->tellg();
 	if (delta <= 0)
-		throw myexcept::myexcept(__func__, "No bytes left to read. Reached end of file");
-	auto r = max_buffer_size < delta ? max_buffer_size : delta;
+		throw myexcept::exception(__func__, "No bytes left to read. Reached end of file");
+	auto r = buffer_size < delta ? buffer_size : delta;
 	file->read(buffer, r);
 
 	if(!file->good())
-		throw myexcept::myexcept(__func__, "Failed writing to file");
+		throw myexcept::exception(__func__, "Failed writing to file");
 
 	current_index = 0;
 }
@@ -57,15 +65,15 @@ void bio::BinaryBuffer::read_next()
 void bio::BinaryBuffer::write_next()
 {
 	if(!file)
-		throw myexcept::myexcept(__FUNCTION__, "No file to write to or creation failed");
+		throw myexcept::exception(__FUNCTION__, "No file to write to or creation failed");
 
 	if(!file->is_open())
-		throw myexcept::myexcept(__func__, "No file open to write to");
+		throw myexcept::exception(__func__, "No file open to write to");
 	
 	file->write(buffer, current_index);
 
 	if(!file->good())
-		throw myexcept::myexcept(__func__, "Failed writing to file");
+		throw myexcept::exception(__func__, "Failed writing to file");
 
 	current_index = 0;
 
