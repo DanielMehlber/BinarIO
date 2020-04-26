@@ -13,36 +13,71 @@ namespace bio {
 
 	class BinaryBuffer;
 
+	/**
+	 * @brief Abstract class for (de-)serializing an object
+	 */
 	class BinarIObject {
 	public:
+		/**
+		 * @brief serialize derived object into buffer
+		 * @param buffer buffer to serialize into
+		 */
 		virtual void serialize(BinaryBuffer& buffer) = 0;
+		/**
+		 * @brief deserialize derived object from buffer
+		 * @param buffer buffer to deserialize from
+		 */
 		virtual void deserialize(BinaryBuffer& buffer) = 0;
 	};
 
-	/*functions for basic data types and pointers, not BinarIObjects*/
+	/**
+	 * @brief serialize basic data type into buffer
+	 */
 	template <typename T> inline void serialize(BinaryBuffer&, T);
+	/**
+	 * @brief deserilialize basic data type from buffer
+	 */
 	template <typename T> inline T deserialize(BinaryBuffer&);
-	/*Specifications of those 2 above for e.g. chars or strings*/
+	
 	template <> inline void serialize<char>(BinaryBuffer&, char);
 	template <> inline char deserialize<char>(BinaryBuffer&);
 	template <> inline void serialize<std::string>(BinaryBuffer&, std::string);
 	template <> inline std::string deserialize<std::string>(BinaryBuffer&);
-	/*functions for arrays*/
+	
+	/**
+	 * @brief serailize array into buffer
+	 */
 	template <typename T> inline void serializeArray(BinaryBuffer&, T*, size_t);
+	/**
+	 * @brief deserialize array from buffer
+	 */
 	template <typename T> inline T* deserializeArray(BinaryBuffer&);
 
+	/**
+	 * @brief Mode necessary to open buffer in read or write mode
+	 */
 	enum class MODE {
 		READ, WRITE
 	};
 
 
+	/**
+	 * @brief Buffer storing constant amount bytes. Can be opened in read or write mode to enable automatic reading or writing 
+	 */
 	class BinaryBuffer {
 	protected:
 		size_t			current_index		{0};
 		std::fstream*	file				{nullptr};
 		std::streamsize	size				{0};
 		MODE			current_mode;
+
+		/**
+		 * @brief read next chunk of bytes.
+		 */
 		bioexport void	read_next();
+		/**
+		 * @brief write next chunk of bytes and clear buffer.
+		 */
 		bioexport void	write_next();
 		
 	public:
@@ -51,11 +86,21 @@ namespace bio {
 		template<typename T> inline void operator<<(T t);
 		template<typename T> inline void operator>>(T& t);
 
+		/**
+		 * @brief default values for BinaryBuffer class
+		 */
 		struct defaults {
 			static size_t buffer_size;
 		};
-
+		
+		/**
+		 * @brief construct BinaryBuffer with default values.
+		 */
 		bioexport BinaryBuffer	();
+		/**
+		 * @brief construct BinaryBuffer with custom buffer size
+		 * @param buffer_size size of buffer. 
+		 */
 		bioexport BinaryBuffer	(size_t buffer_size);
 		bioexport BinaryBuffer  (const BinaryBuffer& cpy);
 		bioexport ~BinaryBuffer	();
